@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --surface-0: #f7f7f5;
+  --surface-1: #ffffff;
+  --border: #e3e3e0;
+  --foreground: #12141c;
+
+  --accent: #6d5ef5;
+  --success: #1f9d63;
+  --warning: #b8791f;
+  --danger: #c23b41;
+
+  --chart-1: #6d5ef5;
+  --chart-2: #2fd98c;
+  --chart-3: #f5b84c;
+  --chart-4: #ff6b6b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-0: #12141c;
+    --surface-1: #1b1e29;
+    --border: #2a2e3d;
+    --foreground: #f2f2f5;
+
+    --success: #2fd98c;
+    --warning: #f5b84c;
+    --danger: #f2545b;
+  }
+}
+
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+}
