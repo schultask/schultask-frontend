@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
-import type { Course, CourseModule, Lesson, LessonContentType } from "@/types/shared";
+import type { Course, CourseModule, Lesson, LessonContentType, QuizQuestion } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { isManagerOrAdmin } from "@/lib/roles";
 import { ApiError } from "@/lib/api";
@@ -29,6 +29,24 @@ function textBody(lesson: Lesson): string {
     return json.body;
   }
   return "";
+}
+
+function quizQuestions(lesson: Lesson): QuizQuestion[] {
+  const json = lesson.contentJson;
+  if (json && typeof json === "object" && "questions" in json && Array.isArray(json.questions)) {
+    return json.questions as QuizQuestion[];
+  }
+  return [];
+}
+
+function newQuestion(): QuizQuestion {
+  const optionId = crypto.randomUUID();
+  return {
+    id: crypto.randomUUID(),
+    prompt: "",
+    options: [{ id: optionId, text: "" }, { id: crypto.randomUUID(), text: "" }],
+    correctOptionId: optionId,
+  };
 }
 
 function BuilderContent({ courseId }: { courseId: string }) {
@@ -349,6 +367,129 @@ function ModuleEditor({
   );
 }
 
+function QuizEditor({
+  questions,
+  onChange,
+  busy,
+}: {
+  questions: QuizQuestion[];
+  onChange: (questions: QuizQuestion[]) => void;
+  busy: boolean;
+}) {
+  function updateQuestion(id: string, patch: Partial<QuizQuestion>) {
+    onChange(questions.map((q) => (q.id === id ? { ...q, ...patch } : q)));
+  }
+
+  function updateOption(questionId: string, optionId: string, text: string) {
+    onChange(
+      questions.map((q) =>
+        q.id !== questionId
+          ? q
+          : { ...q, options: q.options.map((o) => (o.id === optionId ? { ...o, text } : o)) },
+      ),
+    );
+  }
+
+  function addOption(questionId: string) {
+    onChange(
+      questions.map((q) =>
+        q.id !== questionId ? q : { ...q, options: [...q.options, { id: crypto.randomUUID(), text: "" }] },
+      ),
+    );
+  }
+
+  function removeOption(questionId: string, optionId: string) {
+    onChange(
+      questions.map((q) => {
+        if (q.id !== questionId) return q;
+        const options = q.options.filter((o) => o.id !== optionId);
+        const correctOptionId = q.correctOptionId === optionId ? options[0]?.id : q.correctOptionId;
+        return { ...q, options, correctOptionId };
+      }),
+    );
+  }
+
+  return (
+    <div className="mt-2 flex flex-col gap-3">
+      {questions.map((question, qIndex) => (
+        <div key={question.id} className="rounded-md border border-border p-3">
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder={`Question ${qIndex + 1}`}
+              value={question.prompt}
+              onChange={(e) => updateQuestion(question.id, { prompt: e.target.value })}
+              disabled={busy}
+              className="flex-1"
+            />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              disabled={busy}
+              aria-label="Delete question"
+              onClick={() => onChange(questions.filter((q) => q.id !== question.id))}
+            >
+              <Trash2 />
+            </Button>
+          </div>
+
+          <div className="mt-2 flex flex-col gap-1.5">
+            {question.options.map((option) => (
+              <div key={option.id} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={`correct-${question.id}`}
+                  checked={question.correctOptionId === option.id}
+                  onChange={() => updateQuestion(question.id, { correctOptionId: option.id })}
+                  disabled={busy}
+                  className="accent-primary"
+                  aria-label="Mark as correct answer"
+                />
+                <Input
+                  placeholder="Option text"
+                  value={option.text}
+                  onChange={(e) => updateOption(question.id, option.id, e.target.value)}
+                  disabled={busy}
+                  className="flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={busy || question.options.length <= 2}
+                  aria-label="Remove option"
+                  onClick={() => removeOption(question.id, option.id)}
+                >
+                  <Trash2 />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="mt-1 w-fit"
+              disabled={busy}
+              onClick={() => addOption(question.id)}
+            >
+              <Plus />
+              Add option
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <Button
+        variant="secondary"
+        size="sm"
+        className="w-fit"
+        disabled={busy}
+        onClick={() => onChange([...questions, newQuestion()])}
+      >
+        <Plus />
+        Add question
+      </Button>
+    </div>
+  );
+}
+
 function LessonEditor({
   moduleId,
   lesson,
@@ -373,12 +514,14 @@ function LessonEditor({
   const [contentType, setContentType] = useState<LessonContentType>(lesson.contentType);
   const [contentUrl, setContentUrl] = useState(lesson.contentUrl ?? "");
   const [body, setBody] = useState(textBody(lesson));
+  const [questions, setQuestions] = useState<QuizQuestion[]>(quizQuestions(lesson));
 
   const dirty =
     title !== lesson.title ||
     contentType !== lesson.contentType ||
     contentUrl !== (lesson.contentUrl ?? "") ||
-    (contentType === "text" && body !== textBody(lesson));
+    (contentType === "text" && body !== textBody(lesson)) ||
+    (contentType === "quiz" && JSON.stringify(questions) !== JSON.stringify(quizQuestions(lesson)));
 
   return (
     <div className="rounded-lg border border-border p-3">
@@ -421,6 +564,8 @@ function LessonEditor({
           disabled={busy}
           placeholder="Lesson content the learner will read"
         />
+      ) : contentType === "quiz" ? (
+        <QuizEditor questions={questions} onChange={setQuestions} busy={busy} />
       ) : (
         <Input
           className="mt-2"
@@ -443,8 +588,9 @@ function LessonEditor({
               body: {
                 title,
                 contentType,
-                contentUrl: contentType === "text" ? undefined : contentUrl || undefined,
-                contentJson: contentType === "text" ? { body } : undefined,
+                contentUrl: contentType === "text" || contentType === "quiz" ? undefined : contentUrl || undefined,
+                contentJson:
+                  contentType === "text" ? { body } : contentType === "quiz" ? { questions } : undefined,
               },
             }),
           )

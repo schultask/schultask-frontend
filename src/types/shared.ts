@@ -59,6 +59,21 @@ export type Lesson = {
   sortOrder: number;
 };
 
+// Stored in Lesson.contentJson when contentType is "quiz". The learner-facing
+// GET /enrollments/:id/course strips correctOptionId server-side — the admin
+// builder's GET /courses/:id still returns it, so QuizQuestion carries the
+// optional field rather than two separate types.
+export type QuizOption = { id: string; text: string };
+export type QuizQuestion = {
+  id: string;
+  prompt: string;
+  options: QuizOption[];
+  correctOptionId?: string;
+};
+export type QuizContent = { questions: QuizQuestion[] };
+
+export type QuizSubmitResult = { scorePct: number; correctCount: number; totalCount: number };
+
 export type CourseModule = {
   id: string;
   courseId: string;
