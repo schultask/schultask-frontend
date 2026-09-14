@@ -6,6 +6,7 @@ import { ArrowLeft, Check, ExternalLink } from "lucide-react";
 import type { Enrollment, EnrollmentWithCourseDetail, Lesson, QuizQuestion, QuizSubmitResult } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { RequireAuth } from "@/components/require-auth";
+import { ProtectedMedia } from "@/components/protected-media";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { Progress } from "@/components/ui/progress";
@@ -17,6 +18,7 @@ const CONTENT_LABEL: Record<Lesson["contentType"], string> = {
   text: "Read",
   quiz: "Take quiz",
   file: "Download file",
+  image: "View image",
 };
 
 // Text lessons (including every AI-generated one) carry their content in
@@ -328,6 +330,13 @@ function PlayerContent() {
                   alreadyCompleted={completedLessonIds.has(activeLesson.id)}
                   submitting={saving}
                   onSubmit={() => submitQuiz(activeLesson)}
+                />
+              ) : activeLesson.contentKey ? (
+                <ProtectedMedia
+                  type={activeLesson.contentType === "image" ? "image" : "video"}
+                  src={`/enrollments/${enrollmentId}/lessons/${activeLesson.id}/content`}
+                  alt={activeLesson.title}
+                  className={activeLesson.contentType === "image" ? "max-h-96 w-auto max-w-full" : "w-full"}
                 />
               ) : activeLesson.contentUrl ? (
                 <a

@@ -40,3 +40,29 @@ export async function apiRequest<T>(
   if (!res.ok) throw new ApiError(res.status, await parseErrorMessage(res));
   return res.json() as Promise<T>;
 }
+
+// Multipart upload — apiRequest always JSON-encodes its body, which can't
+// carry a File. No Content-Type header here on purpose: the browser sets
+// the multipart boundary itself when the body is a FormData.
+export async function apiUpload<T>(path: string, file: File, token?: string | null): Promise<T> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: form,
+  });
+  if (!res.ok) throw new ApiError(res.status, await parseErrorMessage(res));
+  return res.json() as Promise<T>;
+}
+
+// Fetches a protected binary response (an uploaded lesson image/video) as a
+// Blob so it can be handed to URL.createObjectURL — the endpoint requires a
+// bearer token, which a plain <img>/<video> src can't attach on its own.
+export async function apiFetchBlob(path: string, token?: string | null): Promise<Blob> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  });
+  if (!res.ok) throw new ApiError(res.status, await parseErrorMessage(res));
+  return res.blob();
+}

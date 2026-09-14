@@ -4,7 +4,7 @@ export type HealthStatus = {
 };
 
 export type CourseStatus = "draft" | "published";
-export type LessonContentType = "video" | "text" | "quiz" | "file";
+export type LessonContentType = "video" | "text" | "quiz" | "file" | "image";
 export type EnrollmentStatus = "not_started" | "in_progress" | "completed";
 export type LearningEventVerb =
   | "course_started"
@@ -55,6 +55,11 @@ export type Lesson = {
   title: string;
   contentType: LessonContentType;
   contentUrl: string | null;
+  // MinIO object key for an uploaded image/video, set once content has been
+  // uploaded via POST /modules/:moduleId/lessons/:lessonId/content. Null for
+  // text/quiz lessons and for video/file lessons that only carry an external
+  // contentUrl.
+  contentKey: string | null;
   contentJson: unknown;
   sortOrder: number;
 };

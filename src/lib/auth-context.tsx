@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { AuthTokens, AuthUser } from "@/types/shared";
-import { ApiError, apiRequest } from "./api";
+import { ApiError, apiFetchBlob, apiRequest, apiUpload } from "./api";
 
 // Access token lives only in memory (a ref, not localStorage) — the
 // tradeoff PROGRESS.md documents: it dies on refresh, which is why the
@@ -21,6 +21,8 @@ type AuthContextValue = {
   signup: (input: SignupInput) => Promise<void>;
   logout: () => Promise<void>;
   authFetch: <T>(path: string, options?: { method?: string; body?: unknown }) => Promise<T>;
+  authUpload: <T>(path: string, file: File) => Promise<T>;
+  authFetchBlob: (path: string) => Promise<Blob>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -85,14 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSession();
   }, [clearSession]);
 
-  // Attaches the current access token, and on a 401 does exactly one
+  // Shared by authFetch/authUpload/authFetchBlob below: attaches the current
+  // access token via `attempt`, and on a 401 does exactly one
   // silent-refresh-and-retry before giving up and clearing the session —
   // covers the access token expiring mid-session without forcing a
   // re-login on every page.
-  const authFetch = useCallback(
-    async <T,>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> => {
+  const withRefresh = useCallback(
+    async <T,>(attempt: (token: string | null) => Promise<T>): Promise<T> => {
       try {
-        return await apiRequest<T>(path, { ...options, token: accessTokenRef.current });
+        return await attempt(accessTokenRef.current);
       } catch (err) {
         if (!(err instanceof ApiError) || err.status !== 401) throw err;
 
@@ -108,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
           accessTokenRef.current = tokens.accessToken;
           localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-          return await apiRequest<T>(path, { ...options, token: tokens.accessToken });
+          return await attempt(tokens.accessToken);
         } catch {
           clearSession();
           throw err;
@@ -118,8 +121,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [clearSession],
   );
 
+  const authFetch = useCallback(
+    <T,>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> =>
+      withRefresh((token) => apiRequest<T>(path, { ...options, token })),
+    [withRefresh],
+  );
+
+  const authUpload = useCallback(
+    <T,>(path: string, file: File): Promise<T> => withRefresh((token) => apiUpload<T>(path, file, token)),
+    [withRefresh],
+  );
+
+  const authFetchBlob = useCallback(
+    (path: string): Promise<Blob> => withRefresh((token) => apiFetchBlob(path, token)),
+    [withRefresh],
+  );
+
   return (
-    <AuthContext.Provider value={{ status, user, login, signup, logout, authFetch }}>
+    <AuthContext.Provider value={{ status, user, login, signup, logout, authFetch, authUpload, authFetchBlob }}>
       {children}
     </AuthContext.Provider>
   );
