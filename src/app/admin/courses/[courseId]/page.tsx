@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { isManagerOrAdmin } from "@/lib/roles";
 import { ApiError } from "@/lib/api";
 import { RequireAuth } from "@/components/require-auth";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -111,10 +111,8 @@ function BuilderContent({ courseId }: { courseId: string }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      <AppHeader active="builder" />
-
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
+    <AppShell active="builder">
+      <div className="mx-auto w-full max-w-3xl px-6 py-10">
         <Link
           href="/admin/courses"
           className="flex w-fit items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -214,8 +212,8 @@ function BuilderContent({ courseId }: { courseId: string }) {
             </Button>
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 

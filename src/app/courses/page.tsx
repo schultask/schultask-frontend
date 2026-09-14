@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Enrollment } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { RequireAuth } from "@/components/require-auth";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { Progress } from "@/components/ui/progress";
@@ -28,10 +28,8 @@ function CoursesPageContent() {
     enrollments?.some((e) => e.status === "in_progress" || e.status === "not_started") ?? false;
 
   return (
-    <div className="flex flex-1 flex-col">
-      <AppHeader active="courses" />
-
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <AppShell active="courses">
+      <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
           Welcome back{user ? `, ${user.name.split(" ")[0]}` : ""}
         </h1>
@@ -89,7 +87,7 @@ function CoursesPageContent() {
             {enrollments.map((enrollment) => (
               <Card
                 key={enrollment.id}
-                className="cursor-pointer overflow-hidden py-0 transition-colors hover:border-primary/50"
+                className="cursor-pointer overflow-hidden py-0 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md active:scale-[0.99]"
                 onClick={() => router.push(`/courses/${enrollment.id}`)}
               >
                 <CourseCover id={enrollment.course.id} className="flex h-28 w-full items-center justify-center" />
@@ -107,8 +105,8 @@ function CoursesPageContent() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 

@@ -6,7 +6,7 @@ import type { AnalyticsOrgOverview } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { isManagerOrAdmin } from "@/lib/roles";
 import { RequireAuth } from "@/components/require-auth";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/ui/kpi-card";
@@ -49,10 +49,8 @@ function DashboardContent() {
   const hasAnyData = overview && (overview.dau.length > 0 || overview.courseCompletion.length > 0);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <AppHeader active="dashboard" />
-
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <AppShell active="dashboard">
+      <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Analytics</h1>
@@ -147,8 +145,8 @@ function DashboardContent() {
             </Card>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 

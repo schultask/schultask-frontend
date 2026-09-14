@@ -30,7 +30,7 @@ export function ContinueLearningHero({ enrollments }: { enrollments: Enrollment[
   const isInProgress = featured.status === "in_progress";
 
   return (
-    <Card className="flex-row items-stretch overflow-hidden py-0">
+    <Card className="flex-row items-stretch overflow-hidden py-0 shadow-md">
       <CourseCover id={featured.course.id} className="flex w-48 shrink-0 items-center justify-center" />
       <div className="flex flex-1 flex-col justify-center gap-3 p-6">
         <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">

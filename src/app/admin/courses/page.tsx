@@ -7,7 +7,7 @@ import type { Course } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { isManagerOrAdmin } from "@/lib/roles";
 import { RequireAuth } from "@/components/require-auth";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -28,10 +28,8 @@ function BuilderContent() {
   }, [authFetch]);
 
   return (
-    <div className="flex flex-1 flex-col">
-      <AppHeader active="builder" />
-
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+    <AppShell active="builder">
+      <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Course builder</h1>
@@ -73,7 +71,7 @@ function BuilderContent() {
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
               <Link key={course.id} href={`/admin/courses/${course.id}`}>
-                <Card className="overflow-hidden py-0 transition-colors hover:border-primary/50">
+                <Card className="cursor-pointer overflow-hidden py-0 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md active:scale-[0.99]">
                   <CourseCover id={course.id} className="flex h-28 w-full items-center justify-center" />
                   <div className="flex flex-col gap-2 p-4">
                     <div className="flex items-center justify-between gap-2">
@@ -91,8 +89,8 @@ function BuilderContent() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
