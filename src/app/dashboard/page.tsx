@@ -152,15 +152,17 @@ function DashboardContent() {
 
 function NoAccess() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <p className="text-sm font-medium text-foreground">This page is for admins and managers</p>
-      <p className="max-w-sm text-sm text-muted-foreground">
-        You don&rsquo;t have access to org analytics. Head back to your courses instead.
-      </p>
-      <Link href="/courses" className="text-sm text-primary hover:underline">
-        Go to my courses
-      </Link>
-    </div>
+    <AppShell active="dashboard">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="text-sm font-medium text-foreground">This page is for admins and managers</p>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          You don&rsquo;t have access to org analytics. Head back to your courses instead.
+        </p>
+        <Link href="/courses" className="text-sm text-primary hover:underline">
+          Go to my courses
+        </Link>
+      </div>
+    </AppShell>
   );
 }
 
