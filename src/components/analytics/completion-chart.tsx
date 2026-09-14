@@ -12,7 +12,7 @@ export function CompletionChart({
 }) {
   if (data.length === 0) {
     return (
-      <p className="flex h-56 items-center justify-center text-sm text-foreground/50">
+      <p className="flex h-56 items-center justify-center text-sm text-muted-foreground">
         No courses have enrollment data yet.
       </p>
     );
@@ -33,7 +33,7 @@ export function CompletionChart({
         <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
         <Tooltip
           contentStyle={{
-            background: "var(--surface-1)",
+            background: "var(--card)",
             border: "1px solid var(--border)",
             borderRadius: 8,
             boxShadow: "none",

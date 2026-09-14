@@ -10,7 +10,7 @@ export function DauChart({ data }: { data: { date: string; count: number }[] }) 
   // so this isn't an edge case worth ignoring.
   if (data.length < 2) {
     return (
-      <p className="flex h-56 items-center justify-center text-sm text-foreground/50">
+      <p className="flex h-56 items-center justify-center text-sm text-muted-foreground">
         {data.length === 1
           ? `${data[0].count} active learner${data[0].count === 1 ? "" : "s"} on ${data[0].date} — check back tomorrow for a trend.`
           : "No activity recorded yet."}
@@ -26,7 +26,7 @@ export function DauChart({ data }: { data: { date: string; count: number }[] }) 
         <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
         <Tooltip
           contentStyle={{
-            background: "var(--surface-1)",
+            background: "var(--card)",
             border: "1px solid var(--border)",
             borderRadius: 8,
             boxShadow: "none",

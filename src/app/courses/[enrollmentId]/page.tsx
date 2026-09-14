@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Check, ExternalLink } from "lucide-react";
 import type { Enrollment, EnrollmentWithCourseDetail, Lesson } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { RequireAuth } from "@/components/require-auth";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ProgressBar } from "@/components/ui/progress-bar";
+import { StatusBadge } from "@/components/status-badge";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -111,7 +112,7 @@ function PlayerContent() {
   if (error) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-sm text-danger">{error}</p>
+        <p className="text-sm text-destructive">{error}</p>
         <Button variant="secondary" onClick={() => router.push("/courses")}>
           Back to my courses
         </Button>
@@ -121,8 +122,18 @@ function PlayerContent() {
 
   if (!enrollment) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-foreground/50">Loading…</p>
+      <div className="flex flex-1 flex-col">
+        <div className="flex h-16 items-center border-b border-border px-6">
+          <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mx-auto flex w-full max-w-5xl flex-1 gap-6 px-6 py-8">
+          <div className="w-64 shrink-0 space-y-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-8 animate-pulse rounded-md bg-muted" />
+            ))}
+          </div>
+          <div className="h-64 flex-1 animate-pulse rounded-xl bg-muted" />
+        </div>
       </div>
     );
   }
@@ -132,26 +143,29 @@ function PlayerContent() {
       <header className="flex items-center justify-between border-b border-border px-6 py-4">
         <div>
           <button
-            className="text-xs text-foreground/50 hover:text-foreground"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             onClick={() => router.push("/courses")}
           >
-            &larr; My courses
+            <ArrowLeft className="size-3.5" />
+            My courses
           </button>
-          <h1 className="font-display text-xl text-foreground">{enrollment.course.title}</h1>
+          <h1 className="font-display text-xl font-bold tracking-tight text-foreground">
+            {enrollment.course.title}
+          </h1>
         </div>
-        <Badge status={enrollment.status}>{enrollment.status.replace("_", " ")}</Badge>
+        <StatusBadge status={enrollment.status}>{enrollment.status.replace("_", " ")}</StatusBadge>
       </header>
 
       <div className="border-b border-border px-6 py-3">
-        <ProgressBar value={enrollment.progressPct} />
-        <p className="mt-1 text-xs text-foreground/50">{enrollment.progressPct}% complete</p>
+        <Progress value={enrollment.progressPct} className="h-1.5" />
+        <p className="mt-1.5 text-xs text-muted-foreground">{enrollment.progressPct}% complete</p>
       </div>
 
       <main className="mx-auto flex w-full max-w-5xl flex-1 gap-6 px-6 py-8">
         <nav className="w-64 shrink-0">
           {enrollment.course.modules.map((module) => (
             <div key={module.id} className="mb-4">
-              <p className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-foreground/40">
+              <p className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {module.title}
               </p>
               <ul className="flex flex-col gap-0.5">
@@ -163,12 +177,16 @@ function PlayerContent() {
                       <button
                         onClick={() => setActiveLessonId(lesson.id)}
                         className={cn(
-                          "flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm",
-                          isActive ? "bg-accent/10 text-accent" : "text-foreground/80 hover:bg-surface-1",
+                          "flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                          isActive ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-muted",
                         )}
                       >
                         <span>{lesson.title}</span>
-                        {isDone && <span className="text-success">✓</span>}
+                        {isDone && (
+                          <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+                            <Check className="size-3" strokeWidth={2.5} />
+                          </span>
+                        )}
                       </button>
                     </li>
                   );
@@ -181,15 +199,16 @@ function PlayerContent() {
         <Card className="flex-1 p-8">
           {activeLesson ? (
             <div className="flex flex-col gap-4">
-              <h2 className="font-display text-lg text-foreground">{activeLesson.title}</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground">{activeLesson.title}</h2>
               {activeLesson.contentUrl ? (
                 <a
                   href={activeLesson.contentUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sm font-medium text-accent hover:underline"
+                  className="flex w-fit items-center gap-1.5 text-sm font-medium text-primary hover:underline"
                 >
-                  {CONTENT_LABEL[activeLesson.contentType]} &rarr;
+                  {CONTENT_LABEL[activeLesson.contentType]}
+                  <ExternalLink className="size-3.5" />
                 </a>
               ) : getTextBody(activeLesson) ? (
                 <div className="flex flex-col gap-3 text-sm leading-relaxed text-foreground/80">
@@ -200,12 +219,12 @@ function PlayerContent() {
                     ))}
                 </div>
               ) : (
-                <p className="text-sm text-foreground/50">No content attached to this lesson yet.</p>
+                <p className="text-sm text-muted-foreground">No content attached to this lesson yet.</p>
               )}
 
               <div>
                 <Button
-                  variant={completedLessonIds.has(activeLesson.id) ? "secondary" : "primary"}
+                  variant={completedLessonIds.has(activeLesson.id) ? "secondary" : "default"}
                   disabled={saving || completedLessonIds.has(activeLesson.id)}
                   onClick={() => markComplete(activeLesson)}
                 >
@@ -214,7 +233,7 @@ function PlayerContent() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-foreground/50">This course has no lessons yet.</p>
+            <p className="text-sm text-muted-foreground">This course has no lessons yet.</p>
           )}
         </Card>
       </main>

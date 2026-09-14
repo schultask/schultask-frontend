@@ -15,7 +15,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <h1 className="font-display text-4xl text-foreground">Schultask</h1>
+      <h1 className="font-logo text-5xl text-foreground">Schultask</h1>
       <p className="max-w-md text-sm text-foreground/70">Corporate learning &amp; development platform.</p>
     </main>
   );

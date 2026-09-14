@@ -1,55 +1,125 @@
 @import "tailwindcss";
 
+/* Dark mode follows the OS preference (no manual toggle in this app) —
+   Tailwind v4's default dark: variant already matches prefers-color-scheme,
+   so no @custom-variant override is needed here. */
+
 :root {
-  --surface-0: #f7f7f5;
-  --surface-1: #ffffff;
-  --border: #e3e3e0;
+  --radius: 0.625rem;
+
+  --background: #f7f7f5;
   --foreground: #12141c;
 
-  --accent: #6d5ef5;
-  --success: #1f9d63;
-  --warning: #b8791f;
-  --danger: #c23b41;
+  --card: #ffffff;
+  --card-foreground: #12141c;
+  --popover: #ffffff;
+  --popover-foreground: #12141c;
+
+  --primary: #6d5ef5;
+  --primary-foreground: #ffffff;
+  --secondary: #eeeeec;
+  --secondary-foreground: #12141c;
+  --muted: #eeeeec;
+  --muted-foreground: #6b6f7a;
+  --accent: #eeeeec;
+  --accent-foreground: #12141c;
+  --destructive: #c23b41;
+  --destructive-foreground: #ffffff;
+
+  --success: #1a8f57;
+  --warning: #a8690f;
+
+  --border: #e3e3e0;
+  --input: #e3e3e0;
+  --ring: #6d5ef5;
 
   --chart-1: #6d5ef5;
-  --chart-2: #2fd98c;
-  --chart-3: #f5b84c;
-  --chart-4: #ff6b6b;
+  --chart-2: #1a8f57;
+  --chart-3: #a8690f;
+  --chart-4: #d94a4a;
+  --chart-5: #1a92a8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --surface-0: #12141c;
-    --surface-1: #1b1e29;
-    --border: #2a2e3d;
+    --background: #0a0a0f;
     --foreground: #f2f2f5;
+
+    --card: #131620;
+    --card-foreground: #f2f2f5;
+    --popover: #131620;
+    --popover-foreground: #f2f2f5;
+
+    --primary: #8577ff;
+    --primary-foreground: #0a0a0f;
+    --secondary: #1b1e29;
+    --secondary-foreground: #f2f2f5;
+    --muted: #1b1e29;
+    --muted-foreground: #9497a6;
+    --accent: #1b1e29;
+    --accent-foreground: #f2f2f5;
+    --destructive: #f2545b;
+    --destructive-foreground: #0a0a0f;
 
     --success: #2fd98c;
     --warning: #f5b84c;
-    --danger: #f2545b;
+
+    --border: #22252f;
+    --input: #22252f;
+    --ring: #8577ff;
+
+    --chart-1: #8577ff;
+    --chart-2: #2fd98c;
+    --chart-3: #f5b84c;
+    --chart-4: #ff6b6b;
+    --chart-5: #22b8cf;
   }
 }
 
 @theme inline {
-  --color-surface-0: var(--surface-0);
-  --color-surface-1: var(--surface-1);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --color-danger: var(--danger);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-logo: var(--font-logo);
 }
 
 body {
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
 }

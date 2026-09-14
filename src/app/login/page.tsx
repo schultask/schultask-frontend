@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -45,69 +45,73 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
+    <main className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="font-display text-3xl text-foreground">Schultask</h1>
-          <p className="mt-1 text-sm text-foreground/60">
+          <h1 className="font-logo text-3xl text-foreground">Schultask</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
             {mode === "login" ? "Log in to your workspace" : "Create your organization"}
           </p>
         </div>
 
-        <Card className="p-6">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {mode === "signup" && (
+        <Card>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {mode === "signup" && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="orgName">Organization name</Label>
+                  <Input
+                    id="orgName"
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              {mode === "signup" && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="name">Your name</Label>
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+              )}
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="orgName">Organization name</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="orgName"
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-            )}
-            {mode === "signup" && (
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="name">Your name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
               </div>
-            )}
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={8}
-                required
-              />
-            </div>
 
-            {error && <p className="text-sm text-danger">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button type="submit" disabled={submitting} className="mt-2">
-              {submitting ? "Please wait…" : mode === "login" ? "Log in" : "Create organization"}
-            </Button>
-          </form>
+              <Button type="submit" disabled={submitting} className="mt-2 w-full">
+                {submitting ? "Please wait…" : mode === "login" ? "Log in" : "Create organization"}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
 
-        <p className="mt-4 text-center text-sm text-foreground/60">
+        <p className="mt-5 text-center text-sm text-muted-foreground">
           {mode === "login" ? "Setting up Schultask for your team? " : "Already have an account? "}
           <button
             type="button"
-            className="font-medium text-accent hover:underline"
+            className="font-medium text-primary hover:underline"
             onClick={() => {
               setError(null);
               setMode(mode === "login" ? "signup" : "login");

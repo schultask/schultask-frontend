@@ -2,18 +2,22 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { ArrowLeft, ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import type { Course, CourseModule, Lesson, LessonContentType } from "@/types/shared";
 import { useAuth } from "@/lib/auth-context";
 import { isManagerOrAdmin } from "@/lib/roles";
 import { ApiError } from "@/lib/api";
 import { RequireAuth } from "@/components/require-auth";
-import { Card } from "@/components/ui/card";
+import { AppHeader } from "@/components/app-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type CourseWithModules = Course & { modules: CourseModule[] };
 
@@ -28,8 +32,7 @@ function textBody(lesson: Lesson): string {
 }
 
 function BuilderContent({ courseId }: { courseId: string }) {
-  const { user, authFetch, logout } = useAuth();
-  const router = useRouter();
+  const { authFetch } = useAuth();
   const [course, setCourse] = useState<CourseWithModules | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -67,8 +70,8 @@ function BuilderContent({ courseId }: { courseId: string }) {
   if (error && !course) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-sm text-danger">{error}</p>
-        <Link href="/admin/courses" className="text-sm text-accent hover:underline">
+        <p className="text-sm text-destructive">{error}</p>
+        <Link href="/admin/courses" className="text-sm text-primary hover:underline">
           Back to course builder
         </Link>
       </div>
@@ -77,8 +80,14 @@ function BuilderContent({ courseId }: { courseId: string }) {
 
   if (!course) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-foreground/50">Loading…</p>
+      <div className="flex flex-1 flex-col">
+        <div className="flex h-16 items-center border-b border-border px-6">
+          <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 px-6 py-10">
+          <div className="h-40 animate-pulse rounded-xl bg-muted" />
+          <div className="h-24 animate-pulse rounded-xl bg-muted" />
+        </div>
       </div>
     );
   }
@@ -103,47 +112,24 @@ function BuilderContent({ courseId }: { courseId: string }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between border-b border-border px-6 py-4">
-        <div className="flex items-center gap-6">
-          <h1 className="font-display text-xl text-foreground">Schultask</h1>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
-              Dashboard
-            </Link>
-            <Link href="/courses" className="text-foreground/60 hover:text-foreground">
-              My courses
-            </Link>
-            <Link href="/admin/courses" className="font-medium text-accent">
-              Builder
-            </Link>
-          </nav>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-foreground/60">{user?.name}</span>
-          <Button
-            variant="ghost"
-            onClick={async () => {
-              await logout();
-              router.replace("/login");
-            }}
-          >
-            Log out
-          </Button>
-        </div>
-      </header>
+      <AppHeader active="builder" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
-        <Link href="/admin/courses" className="text-xs text-foreground/50 hover:text-foreground">
-          &larr; Course builder
+        <Link
+          href="/admin/courses"
+          className="flex w-fit items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5" />
+          Course builder
         </Link>
 
         <div className="mt-2 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Badge status={course.status}>{course.status}</Badge>
+            <StatusBadge status={course.status}>{course.status}</StatusBadge>
             {course.aiGenerated && (
-              <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">
+              <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
                 AI generated
-              </span>
+              </Badge>
             )}
           </div>
           {course.status === "draft" && (
@@ -156,34 +142,36 @@ function BuilderContent({ courseId }: { courseId: string }) {
           )}
         </div>
 
-        {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
 
-        <Card className="mt-4 flex flex-col gap-4 p-6">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={busy} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={busy}
-            />
-          </div>
-          <Button
-            variant="secondary"
-            className="w-fit"
-            disabled={busy || (title === course.title && description === (course.description ?? ""))}
-            onClick={() => run(() => authFetch(`/courses/${courseId}`, { method: "PATCH", body: { title, description } }))}
-          >
-            Save details
-          </Button>
+        <Card className="mt-4">
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={busy} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={busy}
+              />
+            </div>
+            <Button
+              variant="secondary"
+              className="w-fit"
+              disabled={busy || (title === course.title && description === (course.description ?? ""))}
+              onClick={() => run(() => authFetch(`/courses/${courseId}`, { method: "PATCH", body: { title, description } }))}
+            >
+              Save details
+            </Button>
+          </CardContent>
         </Card>
 
-        <h2 className="mt-8 text-sm font-medium text-foreground/60">Modules</h2>
+        <h2 className="mt-8 text-sm font-medium text-muted-foreground">Modules</h2>
         <div className="mt-3 flex flex-col gap-4">
           {modules.map((module, index) => (
             <ModuleEditor
@@ -200,30 +188,58 @@ function BuilderContent({ courseId }: { courseId: string }) {
           ))}
         </div>
 
-        <Card className="mt-4 flex items-center gap-2 p-4">
-          <Input
-            placeholder="New module title"
-            value={newModuleTitle}
-            onChange={(e) => setNewModuleTitle(e.target.value)}
-            disabled={busy}
-          />
-          <Button
-            variant="secondary"
-            disabled={busy || !newModuleTitle.trim()}
-            onClick={() =>
-              run(async () => {
-                await authFetch(`/courses/${courseId}/modules`, {
-                  method: "POST",
-                  body: { title: newModuleTitle, sortOrder: modules.length },
-                });
-                setNewModuleTitle("");
-              })
-            }
-          >
-            Add module
-          </Button>
+        <Card className="mt-4">
+          <CardContent className="flex items-center gap-2">
+            <Input
+              placeholder="New module title"
+              value={newModuleTitle}
+              onChange={(e) => setNewModuleTitle(e.target.value)}
+              disabled={busy}
+            />
+            <Button
+              variant="secondary"
+              disabled={busy || !newModuleTitle.trim()}
+              onClick={() =>
+                run(async () => {
+                  await authFetch(`/courses/${courseId}/modules`, {
+                    method: "POST",
+                    body: { title: newModuleTitle, sortOrder: modules.length },
+                  });
+                  setNewModuleTitle("");
+                })
+              }
+            >
+              <Plus />
+              Add module
+            </Button>
+          </CardContent>
         </Card>
       </main>
+    </div>
+  );
+}
+
+function ReorderButtons({
+  busy,
+  isFirst,
+  isLast,
+  onMoveUp,
+  onMoveDown,
+}: {
+  busy: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}) {
+  return (
+    <div className="flex flex-col">
+      <Button variant="ghost" size="icon-xs" disabled={busy || isFirst} onClick={onMoveUp} aria-label="Move up">
+        <ChevronUp />
+      </Button>
+      <Button variant="ghost" size="icon-xs" disabled={busy || isLast} onClick={onMoveDown} aria-label="Move down">
+        <ChevronDown />
+      </Button>
     </div>
   );
 }
@@ -269,16 +285,9 @@ function ModuleEditor({
   }
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-2">
-        <div className="flex flex-col">
-          <button className="disabled:opacity-30" disabled={busy || isFirst} onClick={onMoveUp}>
-            ▲
-          </button>
-          <button className="disabled:opacity-30" disabled={busy || isLast} onClick={onMoveDown}>
-            ▼
-          </button>
-        </div>
+    <Card>
+      <CardContent className="flex items-center gap-2">
+        <ReorderButtons busy={busy} isFirst={isFirst} isLast={isLast} onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
         <Input value={title} onChange={(e) => setTitle(e.target.value)} disabled={busy} className="flex-1" />
         <Button
           variant="secondary"
@@ -289,14 +298,16 @@ function ModuleEditor({
         </Button>
         <Button
           variant="ghost"
+          size="icon"
           disabled={busy}
+          aria-label="Delete module"
           onClick={() => run(() => authFetch(`/courses/${courseId}/modules/${module.id}`, { method: "DELETE" }))}
         >
-          Delete
+          <Trash2 />
         </Button>
-      </div>
+      </CardContent>
 
-      <div className="mt-3 flex flex-col gap-3 pl-6">
+      <div className="flex flex-col gap-3 px-6 pb-6 pl-14">
         {lessons.map((lesson, index) => (
           <LessonEditor
             key={lesson.id}
@@ -331,6 +342,7 @@ function ModuleEditor({
               })
             }
           >
+            <Plus />
             Add lesson
           </Button>
         </div>
@@ -371,35 +383,34 @@ function LessonEditor({
     (contentType === "text" && body !== textBody(lesson));
 
   return (
-    <div className="rounded-md border border-border p-3">
+    <div className="rounded-lg border border-border p-3">
       <div className="flex items-center gap-2">
-        <div className="flex flex-col">
-          <button className="text-xs disabled:opacity-30" disabled={busy || isFirst} onClick={onMoveUp}>
-            ▲
-          </button>
-          <button className="text-xs disabled:opacity-30" disabled={busy || isLast} onClick={onMoveDown}>
-            ▼
-          </button>
-        </div>
+        <ReorderButtons busy={busy} isFirst={isFirst} isLast={isLast} onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
         <Input value={title} onChange={(e) => setTitle(e.target.value)} disabled={busy} className="flex-1" />
-        <select
+        <Select
           value={contentType}
-          onChange={(e) => setContentType(e.target.value as LessonContentType)}
+          onValueChange={(value) => setContentType(value as LessonContentType)}
           disabled={busy}
-          className="rounded-md border border-border bg-surface-0 px-2 py-2 text-sm text-foreground"
         >
-          {CONTENT_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger size="sm" className="w-28">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CONTENT_TYPES.map((type) => (
+              <SelectItem key={type} value={type} className="capitalize">
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button
           variant="ghost"
+          size="icon"
           disabled={busy}
+          aria-label="Delete lesson"
           onClick={() => run(() => authFetch(`/modules/${moduleId}/lessons/${lesson.id}`, { method: "DELETE" }))}
         >
-          Delete
+          <Trash2 />
         </Button>
       </div>
 
@@ -424,6 +435,7 @@ function LessonEditor({
 
       <Button
         variant="secondary"
+        size="sm"
         className="mt-2"
         disabled={busy || !dirty}
         onClick={() =>
@@ -450,7 +462,7 @@ function NoAccess() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
       <p className="text-sm font-medium text-foreground">This page is for admins and managers</p>
-      <Link href="/courses" className="text-sm text-accent hover:underline">
+      <Link href="/courses" className="text-sm text-primary hover:underline">
         Go to my courses
       </Link>
     </div>
