@@ -1,34 +1,22 @@
 # schultask-frontend
 
-Next.js UI for Schultask (corporate L&D platform). Deployed as a container — see [schultask-deployment](https://github.com/abdulaziz-bd/schultask-deployment) for the full stack this runs alongside, or [schultask-backend](https://github.com/abdulaziz-bd/schultask-backend) for the API it talks to.
+Next.js UI for Schultask, a corporate L&D platform. Talks to [schultask-backend](https://github.com/schultask/schultask-backend); see [schultask-deployment](https://github.com/schultask/schultask-deployment) for the full stack.
 
 ## Prerequisites
 
 - Node.js 22+
-- npm
-- A running `schultask-backend` instance to point at
+- A running `schultask-backend` instance
 
-## Local development
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Copy the env file and point it at your backend:
-   ```bash
-   cp .env.example .env.local
-   ```
-3. Start the dev server:
-   ```bash
-   npm run dev
-   ```
-   Open http://localhost:3000
-
-## Building the container image
+## Getting started
 
 ```bash
-docker build --build-arg NEXT_PUBLIC_API_URL=https://api.yourdomain.com \
-  -t ghcr.io/abdulaziz-bd/schultask-frontend:latest .
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-`NEXT_PUBLIC_API_URL` is inlined into the client bundle at build time (Next.js `output: "standalone"`), so it must be set at build time, not just as a container runtime env var. Pushed automatically to GHCR by `.github/workflows/docker-publish.yml` on every push to `main` — set the `NEXT_PUBLIC_API_URL` repository variable once under **Settings → Secrets and variables → Actions → Variables** before the first run.
+Open http://localhost:3000
+
+## License
+
+MIT
